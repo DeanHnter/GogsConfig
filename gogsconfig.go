@@ -2,7 +2,6 @@ package gogsconfig
 
 import (
 	"html/template"
-	"os"
 	"bytes"
 	"text/template"
 	"gopkg.in/ini.v1"
@@ -145,7 +144,7 @@ type GogsConfig struct {
 	GogSecurity   Security
 }
 
-func NewGogsINI() (GogsConfig, error)  {
+func NewGogsINI() (*GogsConfig, error)  {
 	var gogsConfig = GogsConfig{
 		BrandName: "Gogs",
 		RunUser:   "git",
