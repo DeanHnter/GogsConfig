@@ -1,11 +1,11 @@
 package gogsconfig
 
 import (
-	"bytes"
 	"html/template"
 	"os"
-	
-	"github.com/go-ini/ini"
+	"bytes"
+	"text/template"
+	"gopkg.in/ini.v1"
 )
 
 
@@ -202,16 +202,32 @@ func NewGogsINI() (GogsConfig, error)  {
 			SecretKey:   "example",
 		},
 	}
+	var buf bytes.Buffer
 	template := template.Must(template.New("ini").Parse(iniContent))
 	err := template.Execute(&buf, gogsConfig)
 	if err != nil {
-		return gogsConfig,err
+		return nil, err
 	}
-	return gogsConfig,nil
+
+	// Load configuration file from buffer
+	cfg, err := ini.Load(buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	// Map to GogsConfig
+	err = cfg.MapTo(&gogsConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gogsConfig, nil
 }
 
 func LoadConfig(path string) (*GogsConfig, error) {
-	cfg, err := ini.Load(path)
+	cfg, err := ini.LoadSources(ini.LoadOptions{
+		IgnoreInlineComment: true,
+	}, path)
 	if err != nil {
 		return nil, err
 	}
@@ -226,18 +242,13 @@ func LoadConfig(path string) (*GogsConfig, error) {
 }
 
 func SaveConfig(path string, gogsConfig *GogsConfig) error {
-	t, err := template.New("GogsConfig").Parse(iniContent)
+	cfg := ini.Empty()
+	err := cfg.MapFrom(gogsConfig)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	err = t.Execute(f, gogsConfig)
+	err = cfg.SaveTo(path)
 	if err != nil {
 		return err
 	}
