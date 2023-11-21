@@ -1,9 +1,8 @@
 package gogsconfig
 
 import (
-	"bytes"
-	"text/template"
-	"gopkg.in/ini.v1"
+	"github.com/go-ini/ini"
+	"os"
 )
 
 
@@ -143,100 +142,25 @@ type GogsConfig struct {
 	GogSecurity   Security
 }
 
-func NewGogsINI() (*GogsConfig, error)  {
-	var gogsConfig = GogsConfig{
-		BrandName: "Gogs",
-		RunUser:   "git",
-		RunMode:   "prod",
-		GogDatabase: Database{
-			Type:     "sqlite3",
-			Host:     "127.0.0.1:5432",
-			Name:     "gogs",
-			Schema:   "public",
-			User:     "gogs",
-			Password: "",
-			SSLMode:  "disable",
-			Path:     "data/gogs.db",
-		},
-		GogRepository: Repository{
-			Root:          "/data/git/gogs-repositories",
-			DefaultBranch: "master",
-		},
-		GogServer: Server{
-			Domain:         "localhost",
-			HTTPPort:       3000,
-			ExternalURL:    "localhost",
-			DisableSSH:     false,
-			SSHPort:        22,
-			StartSSHServer: false,
-			OfflineMode:    false,
-		},
-		GogMailer: Mailer{
-			Enabled: false,
-		},
-		GogAuth: Auth{
-			RequireEmailConfirmation:  false,
-			DisableRegistration:       true,
-			EnableRegistrationCaptcha: true,
-			RequireSigninView:         false,
-		},
-		GogUser: User{
-			EnableEmailNotification: false,
-		},
-		GogPicture: Picture{
-			DisableGravatar:       false,
-			EnableFederatedAvatar: false,
-		},
-		GogSession: Session{
-			Provider: "file",
-		},
-		GogLog: Log{
-			Mode:     "file",
-			Level:    "Info",
-			RootPath: "/app/gogs/log",
-		},
-		GogSecurity: Security{
-			InstallLock: true,
-			SecretKey:   "example",
-		},
-	}
-	var buf bytes.Buffer
-	template := template.Must(template.New("ini").Parse(iniContent))
-	err := template.Execute(&buf, gogsConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	// Load configuration file from buffer
-	cfg, err := ini.Load(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
-
-	// Map to GogsConfig
-	err = cfg.MapTo(&gogsConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return &gogsConfig, nil
-}
-
 func LoadConfig(path string) (*GogsConfig, error) {
-	cfg, err := ini.LoadSources(ini.LoadOptions{
-		IgnoreInlineComment: true,
-	}, path)
+	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-
-	gogsConfig := new(GogsConfig)
-	err = cfg.MapTo(gogsConfig)
+	
+	cfg, err := ini.InsensitiveLoad(content)
 	if err != nil {
-		return nil, err
+		fmt.Printf("Fail to read file: %v", err)
+		return
 	}
-
-	return gogsConfig, nil
+	
+	var config GogsConfig
+	err = cfg.MapTo(&config)
+	if err != nil {
+		fmt.Printf("Fail to map data: %v", err)
+		return
+	}
+	return &config
 }
 
 func SaveConfig(path string, gogsConfig *GogsConfig) error {
