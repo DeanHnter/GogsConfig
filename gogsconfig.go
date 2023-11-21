@@ -1,9 +1,10 @@
 package gogsconfig
 
 import (
+	"bytes"
 	"html/template"
 	"os"
-
+	
 	"github.com/go-ini/ini"
 )
 
@@ -166,7 +167,7 @@ func NewGogsINI() (GogsConfig, error)  {
 		GogServer: Server{
 			Domain:         "localhost",
 			HTTPPort:       3000,
-			ExternalURL:    gogscfg.endpoint,
+			ExternalURL:    "localhost",
 			DisableSSH:     false,
 			SSHPort:        22,
 			StartSSHServer: false,
@@ -202,12 +203,11 @@ func NewGogsINI() (GogsConfig, error)  {
 		},
 	}
 	template := template.Must(template.New("ini").Parse(iniContent))
-	var buf bytes.Buffer
-	err = template.Execute(&buf, gogsConfig)
+	err := template.Execute(&buf, gogsConfig)
 	if err != nil {
 		return gogsConfig,err
 	}
-	return gogsConfig,err
+	return gogsConfig,nil
 }
 
 func LoadConfig(path string) (*GogsConfig, error) {
