@@ -1,10 +1,13 @@
 package gogsconfig
 
 import (
-	"github.com/go-ini/ini"
+	"errors"
+	"fmt"
+	"log"
 	"os"
-)
 
+	"github.com/go-ini/ini"
+)
 
 const (
 	iniContent = `[App]
@@ -147,20 +150,20 @@ func LoadConfig(path string) (*GogsConfig, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	cfg, err := ini.InsensitiveLoad(content)
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
-		return
+		return nil, errors.New("Fail to read file")
 	}
-	
+
 	var config GogsConfig
 	err = cfg.MapTo(&config)
 	if err != nil {
 		fmt.Printf("Fail to map data: %v", err)
-		return
+		return nil, errors.New("Fail to map data")
 	}
-	return &config
+	return &config, nil
 }
 
 func SaveConfig(path string, gogsConfig *GogsConfig) error {
