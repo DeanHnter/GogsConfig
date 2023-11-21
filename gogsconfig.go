@@ -144,6 +144,72 @@ type GogsConfig struct {
 	GogSecurity   Security
 }
 
+func NewGogsINI() (GogsConfig, error)  {
+	var gogsConfig = GogsConfig{
+		BrandName: "Gogs",
+		RunUser:   "git",
+		RunMode:   "prod",
+		GogDatabase: Database{
+			Type:     "sqlite3",
+			Host:     "127.0.0.1:5432",
+			Name:     "gogs",
+			Schema:   "public",
+			User:     "gogs",
+			Password: "",
+			SSLMode:  "disable",
+			Path:     "data/gogs.db",
+		},
+		GogRepository: Repository{
+			Root:          "/data/git/gogs-repositories",
+			DefaultBranch: "master",
+		},
+		GogServer: Server{
+			Domain:         "localhost",
+			HTTPPort:       3000,
+			ExternalURL:    gogscfg.endpoint,
+			DisableSSH:     false,
+			SSHPort:        22,
+			StartSSHServer: false,
+			OfflineMode:    false,
+		},
+		GogMailer: Mailer{
+			Enabled: false,
+		},
+		GogAuth: Auth{
+			RequireEmailConfirmation:  false,
+			DisableRegistration:       true,
+			EnableRegistrationCaptcha: true,
+			RequireSigninView:         false,
+		},
+		GogUser: User{
+			EnableEmailNotification: false,
+		},
+		GogPicture: Picture{
+			DisableGravatar:       false,
+			EnableFederatedAvatar: false,
+		},
+		GogSession: Session{
+			Provider: "file",
+		},
+		GogLog: Log{
+			Mode:     "file",
+			Level:    "Info",
+			RootPath: "/app/gogs/log",
+		},
+		GogSecurity: Security{
+			InstallLock: true,
+			SecretKey:   "example",
+		},
+	}
+	template := template.Must(template.New("ini").Parse(iniContent))
+	var buf bytes.Buffer
+	err = template.Execute(&buf, gogsConfig)
+	if err != nil {
+		return gogsConfig,err
+	}
+	return gogsConfig,err
+}
+
 func LoadConfig(path string) (*GogsConfig, error) {
 	cfg, err := ini.Load(path)
 	if err != nil {
