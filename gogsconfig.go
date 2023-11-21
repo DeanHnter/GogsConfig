@@ -1,7 +1,6 @@
 package gogsconfig
 
 import (
-	"html/template"
 	"bytes"
 	"text/template"
 	"gopkg.in/ini.v1"
@@ -242,7 +241,7 @@ func LoadConfig(path string) (*GogsConfig, error) {
 
 func SaveConfig(path string, gogsConfig *GogsConfig) error {
 	cfg := ini.Empty()
-	err := cfg.MapFrom(gogsConfig)
+	err := cfg.ReflectFrom(gogsConfig)
 	if err != nil {
 		return err
 	}
