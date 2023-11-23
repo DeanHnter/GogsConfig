@@ -153,10 +153,12 @@ type GogsConfig struct {
 }
 
 func NewGogsConfig() (*GogsConfig, error) {
-    cfg, err := ini.Load(path)
+    cfg, err := ini.LoadSources(ini.LoadOptions{
+        IgnoreInlineComment: true,
+    }, []byte(iniContent))
     if err != nil {
-	fmt.Printf("Fail to read file: %v", err)
-	return nil, errors.New("Fail to read file")
+        fmt.Printf("Fail to parse INI data: %v", err)
+        return nil, errors.New("Fail to parse INI data")
     }
 
     var config GogsConfig
