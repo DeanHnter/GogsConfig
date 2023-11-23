@@ -15,7 +15,7 @@ BRAND_NAME = {{.BrandName}}
 RUN_USER = {{.RunUser}}
 RUN_MODE = {{.RunMode}}
 
-[GogDatabase]
+[database]
 TYPE = {{.GogDatabase.Type}}
 HOST = {{.GogDatabase.Host}}
 NAME = {{.GogDatabase.Name}}
@@ -25,11 +25,11 @@ PASSWORD = {{.GogDatabase.Password}}
 SSL_MODE = {{.GogDatabase.SSLMode}}
 PATH = {{.GogDatabase.Path}}
 
-[GogRepository]
+[repository]
 ROOT = {{.GogRepository.Root}}
 DEFAULT_BRANCH = {{.GogRepository.DefaultBranch}}
 
-[GogServer]
+[server]
 DOMAIN = {{.GogServer.Domain}}
 HTTP_PORT = {{.GogServer.HTTPPort}}
 EXTERNAL_URL = {{.GogServer.ExternalURL}}
@@ -38,7 +38,7 @@ SSH_PORT = {{.GogServer.SSHPort}}
 START_SSH_SERVER = {{.GogServer.StartSSHServer}}
 OFFLINE_MODE = {{.GogServer.OfflineMode}}
 
-[GogMailer]
+[email]
 ENABLED = {{.GogMailer.Enabled}}
 
 [GogAuth]
@@ -47,22 +47,22 @@ DISABLE_REGISTRATION = {{.GogAuth.DisableRegistration}}
 ENABLE_REGISTRATION_CAPTCHA = {{.GogAuth.EnableRegistrationCaptcha}}
 REQUIRE_SIGNIN_VIEW = {{.GogAuth.RequireSigninView}}
 
-[GogUser]
+[user]
 ENABLE_EMAIL_NOTIFICATION = {{.GogUser.EnableEmailNotification}}
 
-[GogPicture]
+[picture]
 DISABLE_GRAVATAR = {{.GogPicture.DisableGravatar}}
 ENABLE_FEDERATED_AVATAR = {{.GogPicture.EnableFederatedAvatar}}
 
-[GogSession]
+[session]
 PROVIDER = {{.GogSession.Provider}}
 
-[GogLog]
+[log]
 MODE = {{.GogLog.Mode}}
 LEVEL = {{.GogLog.Level}}
 ROOT_PATH = {{.GogLog.RootPath}}
 
-[GogSecurity]
+[security]
 INSTALL_LOCK = {{.GogSecurity.InstallLock}}
 SECRET_KEY = {{.GogSecurity.SecretKey}}
 `
