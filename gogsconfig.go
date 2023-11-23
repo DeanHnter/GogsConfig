@@ -10,61 +10,60 @@ import (
 )
 
 const (
-	iniContent = `[App]
-BRAND_NAME = {{.BrandName}}
-RUN_USER = {{.RunUser}}
-RUN_MODE = {{.RunMode}}
+	iniContent = `[app]
+BRAND_NAME = Gogs
+RUN_USER = git
+RUN_MODE = dev
 
 [database]
-TYPE = {{.GogDatabase.Type}}
-HOST = {{.GogDatabase.Host}}
-NAME = {{.GogDatabase.Name}}
-SCHEMA = {{.GogDatabase.Schema}}
-USER = {{.GogDatabase.User}}
-PASSWORD = {{.GogDatabase.Password}}
-SSL_MODE = {{.GogDatabase.SSLMode}}
-PATH = {{.GogDatabase.Path}}
+TYPE = postgres
+HOST = 127.0.0.1:5432
+NAME = gogs
+USER = gogs
+PASSWORD =
+SSL_MODE = disable
+PATH = data/gogs.db
 
 [repository]
-ROOT = {{.GogRepository.Root}}
-DEFAULT_BRANCH = {{.GogRepository.DefaultBranch}}
+ROOT = 
+DEFAULT_BRANCH = master
 
 [server]
-DOMAIN = {{.GogServer.Domain}}
-HTTP_PORT = {{.GogServer.HTTPPort}}
-EXTERNAL_URL = {{.GogServer.ExternalURL}}
-DISABLE_SSH = {{.GogServer.DisableSSH}}
-SSH_PORT = {{.GogServer.SSHPort}}
-START_SSH_SERVER = {{.GogServer.StartSSHServer}}
-OFFLINE_MODE = {{.GogServer.OfflineMode}}
+DOMAIN = localhost
+HTTP_PORT = 3000
+EXTERNAL_URL = http://localhost:3000/
+DISABLE_SSH = false
+SSH_PORT = 22
+START_SSH_SERVER = false
+OFFLINE_MODE = false
 
 [email]
-ENABLED = {{.GogMailer.Enabled}}
+ENABLED = false
 
-[GogAuth]
-REQUIRE_EMAIL_CONFIRMATION = {{.GogAuth.RequireEmailConfirmation}}
-DISABLE_REGISTRATION = {{.GogAuth.DisableRegistration}}
-ENABLE_REGISTRATION_CAPTCHA = {{.GogAuth.EnableRegistrationCaptcha}}
-REQUIRE_SIGNIN_VIEW = {{.GogAuth.RequireSigninView}}
+[auth]
+REQUIRE_EMAIL_CONFIRMATION = false
+DISABLE_REGISTRATION = false
+ENABLE_REGISTRATION_CAPTCHA = true
+REQUIRE_SIGNIN_VIEW = false
 
 [user]
-ENABLE_EMAIL_NOTIFICATION = {{.GogUser.EnableEmailNotification}}
+ENABLE_EMAIL_NOTIFICATION = false
 
 [picture]
-DISABLE_GRAVATAR = {{.GogPicture.DisableGravatar}}
-ENABLE_FEDERATED_AVATAR = {{.GogPicture.EnableFederatedAvatar}}
+DISABLE_GRAVATAR = false
+ENABLE_FEDERATED_AVATAR = false
 
 [session]
-PROVIDER = {{.GogSession.Provider}}
+PROVIDER = memory
 
 [log]
-MODE = {{.GogLog.Mode}}
-LEVEL = {{.GogLog.Level}}
-ROOT_PATH = {{.GogLog.RootPath}}
+MODE = console
+LEVEL = Trace
+ROOT_PATH =
 
 [security]
-INSTALL_LOCK = {{.GogSecurity.InstallLock}}
-SECRET_KEY = {{.GogSecurity.SecretKey}}
+INSTALL_LOCK = false
+SECRET_KEY = !#@FDEWREWR&*(
 `
 )
 
