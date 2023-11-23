@@ -172,7 +172,7 @@ func NewGogsConfig() (*GogsConfig, error) {
 }
 
 func LoadConfig(path string) (*GogsConfig, error) {
-	cfg, err := ini.InsensitiveLoadFromFile(path)
+	cfg, err := ini.LoadSources(ini.LoadOptions{Insensitive: true}, path)
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
 		return nil, errors.New("Fail to read file")
