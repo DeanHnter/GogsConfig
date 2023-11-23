@@ -145,6 +145,23 @@ type GogsConfig struct {
 	GogSecurity   Security
 }
 
+func NewGogsConfig() (*GogsConfig, error) {
+    cfg, err := ini.InsensitiveLoad([]byte(iniContent))
+    if err != nil {
+        fmt.Printf("Fail to load ini content: %v", err)
+        return nil, errors.New("Fail to load ini content")
+    }
+
+    var config GogsConfig
+    err = cfg.MapTo(&config)
+    if err != nil {
+        fmt.Printf("Fail to map data: %v", err)
+        return nil, errors.New("Fail to map data")
+    }
+
+    return &config, nil
+}
+
 func LoadConfig(path string) (*GogsConfig, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
