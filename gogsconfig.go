@@ -188,7 +188,15 @@ func SaveConfig(path string, gogsConfig *GogsConfig) error {
 	if err != nil {
 		return err
 	}
-
+	
+	for _, section := range cfg.Sections() {
+		for key, value := range section.KeysHash() {
+			if value == "" || value == "0" {
+				section.DeleteKey(key)
+			}
+		}
+	}
+	
 	err = cfg.SaveTo(path)
 	if err != nil {
 		return err
