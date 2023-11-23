@@ -3,8 +3,6 @@ package gogsconfig
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/go-ini/ini"
 )
@@ -155,10 +153,10 @@ type GogsConfig struct {
 }
 
 func NewGogsConfig() (*GogsConfig, error) {
-    cfg, err := ini.InsensitiveLoad([]byte(iniContent))
+    cfg, err := ini.Load(path)
     if err != nil {
-        fmt.Printf("Fail to load ini content: %v", err)
-        return nil, errors.New("Fail to load ini content")
+	fmt.Printf("Fail to read file: %v", err)
+	return nil, errors.New("Fail to read file")
     }
 
     var config GogsConfig
