@@ -65,6 +65,36 @@ SECRET_KEY = !#@FDEWREWR&*(
 `
 )
 
+//structure of payload gogs expects to install
+type Payload struct {
+    AdminConfirmPasswd    string
+    AdminEmail            string
+    AdminName             string
+    AdminPasswd           string
+    AppName               string
+    AppURL                string
+    DBHost                string
+    DBName                string
+    DBPasswd              string
+    DBPath                string
+    DBSchema              string
+    DBType                string
+    DBUser                string
+    DefaultBranch         string
+    Domain                string
+    EnableCaptcha         string
+    HTTPPort              string
+    LogRootPath           string
+    RepoRootPath          string
+    RunUser               string
+    SMTPFrom              string
+    SMTPHost              string
+    SMTPPasswd            string
+    SMTPUser              string
+    SSHPort               string
+    SSLMode               string
+}
+
 type Database struct {
 	Type     string `ini:"TYPE"`
 	Host     string `ini:"HOST"`
@@ -152,6 +182,67 @@ type GogsConfig struct {
 	GogSecurity Security `ini:"security"`
 }
 
+func CreatePayload(cfg *GogsConfig) string {
+    p := Payload{
+        AdminConfirmPassword: "admin1",
+        AdminEmail:           "admin@admin.com",
+        AdminName:            "admin1",
+        AdminPassword:        "admin1",
+        AppName:              "Gogs",
+        AppURL:               "http://localhost:3000/",
+        DBHost:               cfg.GogDatabase.Host,
+        DBName:               cfg.GogDatabase.Name,
+        DBPassword:           cfg.GogDatabase.Password,
+        DBPath:               cfg.GogDatabase.Path,
+        DBSchema:             cfg.GogDatabase.Schema,
+        DBtype:               cfg.GogDatabase.Host,
+        DBUser:               cfg.GogDatabase.User,
+        DefaultBranch:        cfg.GogRepository.DefaultBranch,
+        Domain:               cfg.GogServer.Domain,
+        EnableCaptcha:        "on",
+        HTTPPort:             cfg.GogServer.HTTPPort,
+        LogRootPath:          "/data/gogs/log",
+        RepoRootPath:         "/data/git/gogs-repositories",
+        RunUser:              cfg.RunUser,
+        SMTPFrom:             "",
+        SMTPHost:             "",
+        SMTPPassword:         "",
+        SMTPUser:             "",
+        SSHPort:              cfg.GogServer.SSHPort,
+        SSLMode:              cfg.GogDatabase.SSLMode,
+    }
+
+    data := url.Values{}
+    data.Set("admin_confirm_passwd", p.AdminConfirmPassword)
+    data.Set("admin_email", p.AdminEmail)
+    data.Set("admin_name", p.AdminName)
+    data.Set("admin_passwd", p.AdminPassword)
+    data.Set("app_name", p.AppName)
+    data.Set("app_url", p.AppURL)
+    data.Set("db_host", p.DBHost)
+    data.Set("db_name", p.DBName)
+    data.Set("db_passwd", p.DBPassword)
+    data.Set("db_path", p.DBPath)
+    data.Set("db_schema", p.DBSchema)
+    data.Set("db_type", p.DBtype)
+    data.Set("db_user", p.DBUser)
+    data.Set("default_branch", p.DefaultBranch)
+    data.Set("domain", p.Domain)
+    data.Set("enable_captcha", p.EnableCaptcha)
+    data.Set("http_port", p.HTTPPort)
+    data.Set("log_root_path", p.LogRootPath)
+    data.Set("repo_root_path", p.RepoRootPath)
+    data.Set("run_user", p.RunUser)
+    data.Set("smtp_from", p.SMTPFrom)
+    data.Set("smtp_host", p.SMTPHost)
+    data.Set("smtp_passwd", p.SMTPPassword)
+    data.Set("smtp_user", p.SMTPUser)
+    data.Set("ssh_port", p.SSHPort)
+    data.Set("ssl_mode", p.SSLMode)
+
+    return data.Encode()
+}
+
 func NewGogsConfig() (*GogsConfig, error) {
     cfg, err := ini.LoadSources(ini.LoadOptions{
         IgnoreInlineComment: true,
@@ -187,40 +278,40 @@ func LoadConfig(path string) (*GogsConfig, error) {
 		fmt.Printf("Fail to map database section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("repository").MapTo(&config.GogDatabase); err != nil {
+	if err = cfg.Section("repository").MapTo(&config.GogRepository); err != nil {
+		fmt.Printf("Fail to map repository section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("server").MapTo(&config.GogServer); err != nil {
+		fmt.Printf("Fail to map server section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("email").MapTo(&config.GogMailer); err != nil {
+		fmt.Printf("Fail to map email section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("auth").MapTo(&config.GogAuth); err != nil {
+		fmt.Printf("Fail to map auth section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("user").MapTo(&config.GogUser); err != nil {
 		fmt.Printf("Fail to map database section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("server").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("picture").MapTo(&config.GogPicture); err != nil {
+		fmt.Printf("Fail to map picture section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("email").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("session").MapTo(&config.GogSession); err != nil {
+		fmt.Printf("Fail to map session section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("auth").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("log").MapTo(&config.GogLog); err != nil {
+		fmt.Printf("Fail to map log section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("user").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("picture").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("session").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("log").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("security").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("security").MapTo(&config.GogSecurity); err != nil {
+		fmt.Printf("Fail to map security section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
 	return config, nil
