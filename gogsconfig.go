@@ -3,7 +3,13 @@ package gogsconfig
 import (
 	"errors"
 	"fmt"
-
+        "io/ioutil"
+        "net/url"
+        "math/rand"
+        "net/http"
+        "time"
+	"strings"
+	
 	"github.com/go-ini/ini"
 )
 
@@ -160,7 +166,11 @@ type GogsConfig struct {
 	BrandName string `ini:"app:BRAND_NAME"`
 	RunUser   string `ini:"app:RUN_USER"`
 	RunMode   string `ini:"app:RUN_MODE"`
-
+	AdminName string
+	AdminPassword string
+	AdminEmail string
+	AdminConfirmPassword string
+	
 	GogDatabase Database `ini:"database"`
 
 	GogRepository Repository `ini:"repository"`
@@ -184,11 +194,11 @@ type GogsConfig struct {
 
 func CreatePayload(cfg *GogsConfig) string {
     p := Payload{
-        AdminConfirmPassword: "admin1",
-        AdminEmail:           "admin@admin.com",
-        AdminName:            "admin1",
-        AdminPassword:        "admin1",
-        AppName:              "Gogs",
+        AdminConfirmPassword: cfg.AdminConfirmPassword,
+        AdminEmail:           cfg.AdminEmail,
+        AdminName:            cfg.AdminName,
+        AdminPassword:        cfg.AdminPassword,
+        AppName:              cfg.BrandName,
         AppURL:               cfg.GogServer.ExternalURL,
         DBHost:               cfg.GogDatabase.Host,
         DBName:               cfg.GogDatabase.Name,
@@ -241,6 +251,82 @@ func CreatePayload(cfg *GogsConfig) string {
     data.Set("ssl_mode", p.SSLMode)
 
     return data.Encode()
+}
+
+func createRequest(method string, url string, payloadString string) (*http.Request, error) {
+  payload := strings.NewReader(payloadString)
+  req, err := http.NewRequest(method, url, payload)
+
+  if err != nil {
+    return nil, err
+  }
+
+  setHeaders(req)
+
+  return req, nil
+}
+
+func randomBrowserConfiguration() (string, string, string, string) {
+    secChUa := []string{
+        "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"",
+        "\"Google Chrome\";v=\"89\", \"Chromium\";v=\"89\", \"Not A Brand\";v=\"99\"",
+    }
+
+    secChUaMobile := []string{"?0", "?1"}
+
+    secChUaPlatform := []string{"\"Windows\"", "\"macOS\"", "\"Android\"", "\"Linux\""}
+
+    userAgent := []string{
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
+        "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    }
+
+    rand.Seed(time.Now().Unix())
+    return secChUa[rand.Intn(len(secChUa))], secChUaMobile[rand.Intn(len(secChUaMobile))], secChUaPlatform[rand.Intn(len(secChUaPlatform))], userAgent[rand.Intn(len(userAgent))]
+}
+
+
+func setHeaders(req *http.Request) {
+    secChUa, secChUaMobile, secChUaPlatform, userAgent := randomBrowserConfiguration()
+    req.Header.Add("sec-ch-ua", secChUa)
+    req.Header.Add("sec-ch-ua-mobile", secChUaMobile)
+    req.Header.Add("sec-ch-ua-platform", secChUaPlatform)
+    req.Header.Add("Upgrade-Insecure-Requests", "1")
+    req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    req.Header.Add("User-Agent", userAgent)
+    req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+    req.Header.Add("host", "localhost")
+    req.Header.Add("Cookie", "id_token=value")
+}
+
+func sendRequest(req *http.Request) error {
+  client := &http.Client{}
+  res, err := client.Do(req)
+  if err != nil {
+    return err
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    return err
+  }
+	
+  return nil
+}
+
+func SetupGogs(cfg *GogsConfig) error {
+    url := "http://localhost:3000/install"
+    method := "POST"
+
+    payload := createPayload(cfg)
+    req, err := createRequest(method, url, payload)
+    if err != nil {
+        return err
+    }
+    err = sendRequest(req)
+    return err
 }
 
 func NewGogsConfig() (*GogsConfig, error) {
