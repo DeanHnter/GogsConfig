@@ -194,10 +194,10 @@ type GogsConfig struct {
 
 func CreatePayload(cfg *GogsConfig) string {
     p := Payload{
-        AdminConfirmPassword: cfg.AdminConfirmPassword,
+        AdminConfirmPasswd:   cfg.AdminConfirmPassword,
         AdminEmail:           cfg.AdminEmail,
         AdminName:            cfg.AdminName,
-        AdminPassword:        cfg.AdminPassword,
+        AdminPasswd:          cfg.AdminPassword,
         AppName:              cfg.BrandName,
         AppURL:               cfg.GogServer.ExternalURL,
         DBHost:               cfg.GogDatabase.Host,
