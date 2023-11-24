@@ -3,7 +3,13 @@ package gogsconfig
 import (
 	"errors"
 	"fmt"
-
+        "io/ioutil"
+        "net/url"
+        "math/rand"
+        "net/http"
+        "time"
+	"strings"
+	
 	"github.com/go-ini/ini"
 )
 
@@ -64,6 +70,36 @@ INSTALL_LOCK = false
 SECRET_KEY = !#@FDEWREWR&*(
 `
 )
+
+//structure of payload gogs expects to install
+type Payload struct {
+    AdminConfirmPasswd    string
+    AdminEmail            string
+    AdminName             string
+    AdminPasswd           string
+    AppName               string
+    AppURL                string
+    DBHost                string
+    DBName                string
+    DBPasswd              string
+    DBPath                string
+    DBSchema              string
+    DBType                string
+    DBUser                string
+    DefaultBranch         string
+    Domain                string
+    EnableCaptcha         string
+    HTTPPort              string
+    LogRootPath           string
+    RepoRootPath          string
+    RunUser               string
+    SMTPFrom              string
+    SMTPHost              string
+    SMTPPasswd            string
+    SMTPUser              string
+    SSHPort               string
+    SSLMode               string
+}
 
 type Database struct {
 	Type     string `ini:"TYPE"`
@@ -130,7 +166,11 @@ type GogsConfig struct {
 	BrandName string `ini:"app:BRAND_NAME"`
 	RunUser   string `ini:"app:RUN_USER"`
 	RunMode   string `ini:"app:RUN_MODE"`
-
+	AdminName string
+	AdminPassword string
+	AdminEmail string
+	AdminConfirmPassword string
+	
 	GogDatabase Database `ini:"database"`
 
 	GogRepository Repository `ini:"repository"`
@@ -150,6 +190,143 @@ type GogsConfig struct {
 	GogLog Log `ini:"log"`
 
 	GogSecurity Security `ini:"security"`
+}
+
+func CreatePayload(cfg *GogsConfig) string {
+    p := Payload{
+        AdminConfirmPassword: cfg.AdminConfirmPassword,
+        AdminEmail:           cfg.AdminEmail,
+        AdminName:            cfg.AdminName,
+        AdminPassword:        cfg.AdminPassword,
+        AppName:              cfg.BrandName,
+        AppURL:               cfg.GogServer.ExternalURL,
+        DBHost:               cfg.GogDatabase.Host,
+        DBName:               cfg.GogDatabase.Name,
+        DBPassword:           cfg.GogDatabase.Password,
+        DBPath:               cfg.GogDatabase.Path,
+        DBSchema:             cfg.GogDatabase.Schema,
+        DBtype:               cfg.GogDatabase.Host,
+        DBUser:               cfg.GogDatabase.User,
+        DefaultBranch:        cfg.GogRepository.DefaultBranch,
+        Domain:               cfg.GogServer.Domain,
+        EnableCaptcha:        "on",
+        HTTPPort:             cfg.GogServer.HTTPPort,
+        LogRootPath:          cfg.Log.RootPath,
+        RepoRootPath:         cfg.GogRepository.Root,
+        RunUser:              cfg.RunUser,
+        SMTPFrom:             "",
+        SMTPHost:             "",
+        SMTPPassword:         "",
+        SMTPUser:             "",
+        SSHPort:              cfg.GogServer.SSHPort,
+        SSLMode:              cfg.GogDatabase.SSLMode,
+    }
+
+    data := url.Values{}
+    data.Set("admin_confirm_passwd", p.AdminConfirmPassword)
+    data.Set("admin_email", p.AdminEmail)
+    data.Set("admin_name", p.AdminName)
+    data.Set("admin_passwd", p.AdminPassword)
+    data.Set("app_name", p.AppName)
+    data.Set("app_url", p.AppURL)
+    data.Set("db_host", p.DBHost)
+    data.Set("db_name", p.DBName)
+    data.Set("db_passwd", p.DBPassword)
+    data.Set("db_path", p.DBPath)
+    data.Set("db_schema", p.DBSchema)
+    data.Set("db_type", p.DBtype)
+    data.Set("db_user", p.DBUser)
+    data.Set("default_branch", p.DefaultBranch)
+    data.Set("domain", p.Domain)
+    data.Set("enable_captcha", p.EnableCaptcha)
+    data.Set("http_port", p.HTTPPort)
+    data.Set("log_root_path", p.LogRootPath)
+    data.Set("repo_root_path", p.RepoRootPath)
+    data.Set("run_user", p.RunUser)
+    data.Set("smtp_from", p.SMTPFrom)
+    data.Set("smtp_host", p.SMTPHost)
+    data.Set("smtp_passwd", p.SMTPPassword)
+    data.Set("smtp_user", p.SMTPUser)
+    data.Set("ssh_port", p.SSHPort)
+    data.Set("ssl_mode", p.SSLMode)
+
+    return data.Encode()
+}
+
+func createRequest(method string, url string, payloadString string) (*http.Request, error) {
+  payload := strings.NewReader(payloadString)
+  req, err := http.NewRequest(method, url, payload)
+
+  if err != nil {
+    return nil, err
+  }
+
+  setHeaders(req)
+
+  return req, nil
+}
+
+func randomBrowserConfiguration() (string, string, string, string) {
+    secChUa := []string{
+        "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"",
+        "\"Google Chrome\";v=\"89\", \"Chromium\";v=\"89\", \"Not A Brand\";v=\"99\"",
+    }
+
+    secChUaMobile := []string{"?0", "?1"}
+
+    secChUaPlatform := []string{"\"Windows\"", "\"macOS\"", "\"Android\"", "\"Linux\""}
+
+    userAgent := []string{
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
+        "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    }
+
+    rand.Seed(time.Now().Unix())
+    return secChUa[rand.Intn(len(secChUa))], secChUaMobile[rand.Intn(len(secChUaMobile))], secChUaPlatform[rand.Intn(len(secChUaPlatform))], userAgent[rand.Intn(len(userAgent))]
+}
+
+
+func setHeaders(req *http.Request) {
+    secChUa, secChUaMobile, secChUaPlatform, userAgent := randomBrowserConfiguration()
+    req.Header.Add("sec-ch-ua", secChUa)
+    req.Header.Add("sec-ch-ua-mobile", secChUaMobile)
+    req.Header.Add("sec-ch-ua-platform", secChUaPlatform)
+    req.Header.Add("Upgrade-Insecure-Requests", "1")
+    req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    req.Header.Add("User-Agent", userAgent)
+    req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+    req.Header.Add("host", "localhost")
+    req.Header.Add("Cookie", "id_token=value")
+}
+
+func sendRequest(req *http.Request) error {
+  client := &http.Client{}
+  res, err := client.Do(req)
+  if err != nil {
+    return err
+  }
+  defer res.Body.Close()
+
+  body, err := ioutil.ReadAll(res.Body)
+  if err != nil {
+    return err
+  }
+	
+  return nil
+}
+
+func SetupGogs(cfg *GogsConfig) error {
+    url := "http://localhost:3000/install"
+    method := "POST"
+
+    payload := createPayload(cfg)
+    req, err := createRequest(method, url, payload)
+    if err != nil {
+        return err
+    }
+    err = sendRequest(req)
+    return err
 }
 
 func NewGogsConfig() (*GogsConfig, error) {
@@ -187,40 +364,40 @@ func LoadConfig(path string) (*GogsConfig, error) {
 		fmt.Printf("Fail to map database section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("repository").MapTo(&config.GogDatabase); err != nil {
+	if err = cfg.Section("repository").MapTo(&config.GogRepository); err != nil {
+		fmt.Printf("Fail to map repository section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("server").MapTo(&config.GogServer); err != nil {
+		fmt.Printf("Fail to map server section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("email").MapTo(&config.GogMailer); err != nil {
+		fmt.Printf("Fail to map email section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("auth").MapTo(&config.GogAuth); err != nil {
+		fmt.Printf("Fail to map auth section: %v", err)
+		return nil, errors.New("Fail to map data")
+	}
+	if err = cfg.Section("user").MapTo(&config.GogUser); err != nil {
 		fmt.Printf("Fail to map database section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("server").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("picture").MapTo(&config.GogPicture); err != nil {
+		fmt.Printf("Fail to map picture section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("email").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("session").MapTo(&config.GogSession); err != nil {
+		fmt.Printf("Fail to map session section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("auth").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("log").MapTo(&config.GogLog); err != nil {
+		fmt.Printf("Fail to map log section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
-	if err = cfg.Section("user").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("picture").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("session").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("log").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
-		return nil, errors.New("Fail to map data")
-	}
-	if err = cfg.Section("security").MapTo(&config.GogDatabase); err != nil {
-		fmt.Printf("Fail to map database section: %v", err)
+	if err = cfg.Section("security").MapTo(&config.GogSecurity); err != nil {
+		fmt.Printf("Fail to map security section: %v", err)
 		return nil, errors.New("Fail to map data")
 	}
 	return config, nil
