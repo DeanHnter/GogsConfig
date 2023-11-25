@@ -163,9 +163,9 @@ type Security struct {
 }
 
 type GogsConfig struct {
-	BrandName string `ini:"app:BRAND_NAME"`
-	RunUser   string `ini:"app:RUN_USER"`
-	RunMode   string `ini:"app:RUN_MODE"`
+	BrandName string
+	RunUser   string
+	RunMode   string
 	AdminName string
 	AdminPassword string
 	AdminEmail string
