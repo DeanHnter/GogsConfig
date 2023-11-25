@@ -300,24 +300,34 @@ func setHeaders(req *http.Request) {
     req.Header.Add("Cookie", "id_token=value")
 }
 
-func sendRequest(req *http.Request) error {
+func sendRequest(req *http.Request) {
     client := &http.Client{}
-    res, err := client.Do(req)
-    if err != nil {
-        return err
-    }
-    defer res.Body.Close()
+    start := time.Now()
+    
+    for {
+        res, err := client.Do(req)
+        if err != nil {
+            time.Sleep(time.Second * 10) // wait for 10 seconds before the next request
+            continue
+        }
 
-    if res.StatusCode < 200 || res.StatusCode >= 300 {
-        return errors.New("non-successful status code returned: " + res.Status)
-    }
+        if res.StatusCode >= 200 && res.StatusCode < 300 {
+            _, err = ioutil.ReadAll(res.Body)
+            if err != nil {
+                time.Sleep(time.Second * 10)
+                continue
+            }
 
-    _, err = ioutil.ReadAll(res.Body)
-    if err != nil {
-        return err
-    }
+            res.Body.Close()
+            return
+        }
 
-    return nil
+        if time.Since(start) >= time.Minute*3 {
+            panic("no valid response within 3 minutes")
+        }
+
+        time.Sleep(time.Second * 10)
+    }
 }
 
 func SetupGogs(cfg *GogsConfig) error {
@@ -329,8 +339,8 @@ func SetupGogs(cfg *GogsConfig) error {
     if err != nil {
         return err
     }
-    err = sendRequest(req)
-    return err
+    sendRequest(req)
+    return nil
 }
 
 func NewGogsConfig() (*GogsConfig, error) {
