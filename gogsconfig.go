@@ -10,7 +10,6 @@ import (
         "time"
 	"strings"
 	"strconv"
-	"path"
 	"github.com/go-ini/ini"
 )
 
