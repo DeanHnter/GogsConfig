@@ -231,10 +231,10 @@ func CreatePayload(cfg *GogsConfig) string {
     data.Set("app_url", p.AppURL)
     data.Set("db_host", p.DBHost)
     data.Set("db_name", p.DBName)
-    data.Set("db_passwd", p.DBPassword)
+    data.Set("db_passwd", p.DBPasswd)
     data.Set("db_path", p.DBPath)
     data.Set("db_schema", p.DBSchema)
-    data.Set("db_type", p.DBtype)
+    data.Set("db_type", p.DBType)
     data.Set("db_user", p.DBUser)
     data.Set("default_branch", p.DefaultBranch)
     data.Set("domain", p.Domain)
@@ -245,7 +245,7 @@ func CreatePayload(cfg *GogsConfig) string {
     data.Set("run_user", p.RunUser)
     data.Set("smtp_from", p.SMTPFrom)
     data.Set("smtp_host", p.SMTPHost)
-    data.Set("smtp_passwd", p.SMTPPassword)
+    data.Set("smtp_passwd", p.SMTPPasswd)
     data.Set("smtp_user", p.SMTPUser)
     data.Set("ssh_port", p.SSHPort)
     data.Set("ssl_mode", p.SSLMode)
@@ -301,26 +301,30 @@ func setHeaders(req *http.Request) {
 }
 
 func sendRequest(req *http.Request) error {
-  client := &http.Client{}
-  res, err := client.Do(req)
-  if err != nil {
-    return err
-  }
-  defer res.Body.Close()
+    client := &http.Client{}
+    res, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer res.Body.Close()
 
-  body, err := ioutil.ReadAll(res.Body)
-  if err != nil {
-    return err
-  }
-	
-  return nil
+    if res.StatusCode < 200 || res.StatusCode >= 300 {
+        return errors.New("non-successful status code returned: " + res.Status)
+    }
+
+    _, err = ioutil.ReadAll(res.Body)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 
 func SetupGogs(cfg *GogsConfig) error {
     url := "http://localhost:3000/install"
     method := "POST"
 
-    payload := createPayload(cfg)
+    payload := CreatePayload(cfg)
     req, err := createRequest(method, url, payload)
     if err != nil {
         return err
