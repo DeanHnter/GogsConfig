@@ -300,13 +300,14 @@ func setHeaders(req *http.Request) {
     req.Header.Add("Cookie", "id_token=value")
 }
 
-func sendRequest(req *http.Request) {
+func sendRequest(req *http.Request, errorCh chan<- string) {
     client := &http.Client{}
     start := time.Now()
-    
+
     for {
         res, err := client.Do(req)
         if err != nil {
+            errorCh <- err.Error() 
             time.Sleep(time.Second * 10) // wait for 10 seconds before the next request
             continue
         }
@@ -314,6 +315,7 @@ func sendRequest(req *http.Request) {
         if res.StatusCode >= 200 && res.StatusCode < 300 {
             _, err = ioutil.ReadAll(res.Body)
             if err != nil {
+                errorCh <- err.Error()
                 time.Sleep(time.Second * 10)
                 continue
             }
@@ -321,6 +323,9 @@ func sendRequest(req *http.Request) {
             res.Body.Close()
             return
         }
+
+        // Send error string to the channel
+        errorCh <- fmt.Sprintf("Received status code: %d", res.StatusCode)
 
         if time.Since(start) >= time.Minute*3 {
             panic("no valid response within 3 minutes")
@@ -330,7 +335,7 @@ func sendRequest(req *http.Request) {
     }
 }
 
-func SetupGogs(cfg *GogsConfig) error {
+func SetupGogs(cfg *GogsConfig, errorCh chan<- string) error {
     url := "http://localhost:3000/install"
     method := "POST"
 
@@ -339,7 +344,7 @@ func SetupGogs(cfg *GogsConfig) error {
     if err != nil {
         return err
     }
-    sendRequest(req)
+    sendRequest(req,errorCh)
     return nil
 }
 
