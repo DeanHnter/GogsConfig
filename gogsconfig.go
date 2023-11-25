@@ -10,6 +10,7 @@ import (
         "time"
 	"strings"
 	"strconv"
+	"path"
 	"github.com/go-ini/ini"
 )
 
@@ -334,8 +335,8 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
     }
 }
 
-func SetupGogs(cfg *GogsConfig, errorCh chan<- string) error {
-    url := "http://localhost:3000/install"
+func SetupGogs(url string, cfg *GogsConfig, errorCh chan<- string) error {
+    url = path.Join(url, "/install")
     method := "POST"
 
     payload := CreatePayload(cfg)
