@@ -301,14 +301,16 @@ func setHeaders(req *http.Request) {
 }
 
 func sendRequest(req *http.Request, errorCh chan<- string) {
+    defer close(errorCh) // Close channel on function return
+
     client := &http.Client{}
     start := time.Now()
 
     for {
         res, err := client.Do(req)
         if err != nil {
-            errorCh <- err.Error() 
-            time.Sleep(time.Second * 10) // wait for 10 seconds before the next request
+            errorCh <- "Error :"+err.Error() 
+            time.Sleep(time.Second * 2)
             continue
         }
 
@@ -316,22 +318,19 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
             _, err = ioutil.ReadAll(res.Body)
             if err != nil {
                 errorCh <- err.Error()
-                time.Sleep(time.Second * 10)
+                time.Sleep(time.Second * 2)
                 continue
             }
-
+            
             res.Body.Close()
             return
         }
-
-        // Send error string to the channel
+      
         errorCh <- fmt.Sprintf("Received status code: %d", res.StatusCode)
 
         if time.Since(start) >= time.Minute*3 {
             panic("no valid response within 3 minutes")
         }
-
-        time.Sleep(time.Second * 10)
     }
 }
 
