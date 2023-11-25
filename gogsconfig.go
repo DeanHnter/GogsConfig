@@ -335,8 +335,8 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
     }
 }
 
-func SetupGogs(url string, cfg *GogsConfig, errorCh chan<- string) error {
-    u, err := url.Parse(url)
+func SetupGogs(urlin string, cfg *GogsConfig, errorCh chan<- string) error {
+    u, err := url.Parse(urlin)
     if err != nil {
         return err
     }
@@ -345,7 +345,7 @@ func SetupGogs(url string, cfg *GogsConfig, errorCh chan<- string) error {
     method := "POST"
 
     payload := CreatePayload(cfg)
-    req, err := createRequest(method, url, payload)
+    req, err := createRequest(method, finalURL, payload)
     if err != nil {
         return err
     }
