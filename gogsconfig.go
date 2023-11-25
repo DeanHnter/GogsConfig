@@ -335,21 +335,25 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
     }
 }
 
-func SetupGogs(urlin string, cfg *GogsConfig, errorCh chan<- string) error {
-    u, err := url.Parse(urlin)
+func SetupGogs(urlstr string, cfg *GogsConfig, errorCh chan<- string) error {
+    u, err := url.Parse(urlstr)
     if err != nil {
         return err
     }
-    u.Path = path.Join(u.Path, "install")
-    finalURL := u.String()
-    method := "POST"
 
+    u.Path= path.Join(u.Path, "/install")
+
+    finalURL := u.String()
+
+    method := "POST"
     payload := CreatePayload(cfg)
+
     req, err := createRequest(method, finalURL, payload)
     if err != nil {
         return err
     }
-    sendRequest(req,errorCh)
+
+    sendRequest(req, errorCh)
     return nil
 }
 
