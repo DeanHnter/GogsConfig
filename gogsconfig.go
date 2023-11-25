@@ -202,31 +202,31 @@ func CreatePayload(cfg *GogsConfig) string {
         AppURL:               cfg.GogServer.ExternalURL,
         DBHost:               cfg.GogDatabase.Host,
         DBName:               cfg.GogDatabase.Name,
-        DBPassword:           cfg.GogDatabase.Password,
+        DBPasswd:             cfg.GogDatabase.Password,
         DBPath:               cfg.GogDatabase.Path,
         DBSchema:             cfg.GogDatabase.Schema,
-        DBtype:               cfg.GogDatabase.Host,
+        DBType:               cfg.GogDatabase.Host,
         DBUser:               cfg.GogDatabase.User,
         DefaultBranch:        cfg.GogRepository.DefaultBranch,
         Domain:               cfg.GogServer.Domain,
         EnableCaptcha:        "on",
-        HTTPPort:             cfg.GogServer.HTTPPort,
-        LogRootPath:          cfg.Log.RootPath,
+        HTTPPort:             strconv.Itoa(cfg.GogServer.HTTPPort),
+        LogRootPath:          cfg.GogLog.RootPath,
         RepoRootPath:         cfg.GogRepository.Root,
         RunUser:              cfg.RunUser,
         SMTPFrom:             "",
         SMTPHost:             "",
-        SMTPPassword:         "",
+        SMTPPasswd:         "",
         SMTPUser:             "",
-        SSHPort:              cfg.GogServer.SSHPort,
+        SSHPort:              strconv.Itoa(cfg.GogServer.SSHPort),
         SSLMode:              cfg.GogDatabase.SSLMode,
     }
 
     data := url.Values{}
-    data.Set("admin_confirm_passwd", p.AdminConfirmPassword)
+    data.Set("admin_confirm_passwd", p.AdminConfirmPasswd)
     data.Set("admin_email", p.AdminEmail)
     data.Set("admin_name", p.AdminName)
-    data.Set("admin_passwd", p.AdminPassword)
+    data.Set("admin_passwd", p.AdminPasswd)
     data.Set("app_name", p.AppName)
     data.Set("app_url", p.AppURL)
     data.Set("db_host", p.DBHost)
