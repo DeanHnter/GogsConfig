@@ -336,7 +336,12 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
 }
 
 func SetupGogs(url string, cfg *GogsConfig, errorCh chan<- string) error {
-    url = path.Join(url, "/install")
+    u, err := url.Parse(url)
+    if err != nil {
+        return err
+    }
+    u.Path = path.Join(u.Path, "install")
+    finalURL := u.String()
     method := "POST"
 
     payload := CreatePayload(cfg)
