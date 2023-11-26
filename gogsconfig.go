@@ -205,7 +205,7 @@ func CreatePayload(cfg *GogsConfig) string {
         DBPasswd:             cfg.GogDatabase.Password,
         DBPath:               cfg.GogDatabase.Path,
         DBSchema:             cfg.GogDatabase.Schema,
-        DBType:               cfg.GogDatabase.Host,
+        DBType:               cfg.GogDatabase.Type,
         DBUser:               cfg.GogDatabase.User,
         DefaultBranch:        cfg.GogRepository.DefaultBranch,
         Domain:               cfg.GogServer.Domain,
