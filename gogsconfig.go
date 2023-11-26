@@ -13,6 +13,8 @@ import (
 	"github.com/go-ini/ini"
 )
 
+type DatabaseType int
+
 const (
     POSTGRES DatabaseType = iota
     MYSQL
@@ -326,14 +328,14 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
         }
 
         if res.StatusCode >= 200 && res.StatusCode < 300 {
-            body, err = ioutil.ReadAll(res.Body)
+            body, err := ioutil.ReadAll(res.Body)
             if err != nil {
                 errorCh <- err.Error()
                 time.Sleep(time.Second * 2)
                 continue
             }
 	    if strings.Contains(body, `"ui negative message"`) {
-		errorCh <- errors.New("Error in submitted configuration") 
+		errorCh <- "Error in submitted configuration"
                 time.Sleep(time.Second * 2)
                 continue
 	    } 
