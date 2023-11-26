@@ -14,6 +14,17 @@ import (
 )
 
 const (
+    POSTGRES DatabaseType = iota
+    MYSQL
+    SQLITE3
+    MSSQL
+)
+
+func (d DatabaseType) String() string {
+    return [...]string{"postgres", "MySQL", "SQLite3", "mssql"}[d]
+}
+
+const (
 	iniContent = `[app]
 BRAND_NAME = Gogs
 RUN_USER = git
