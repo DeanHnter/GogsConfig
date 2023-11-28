@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"github.com/go-ini/ini"
 	"golang.org/x/crypto/pbkdf2"
+	"crypto/sha256"
+	"crypto/subtle"
 )
 
 // /////////////////////////////
