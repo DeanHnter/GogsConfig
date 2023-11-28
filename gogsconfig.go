@@ -334,7 +334,7 @@ func sendRequest(req *http.Request, errorCh chan<- string) {
                 time.Sleep(time.Second * 2)
                 continue
             }
-	    if strings.Contains(body, `"ui negative message"`) {
+	    if strings.Contains(string(body), `"ui negative message"`) {
 		errorCh <- "Error in submitted configuration"
                 time.Sleep(time.Second * 2)
                 continue
