@@ -11,7 +11,21 @@ import (
 	"strings"
 	"strconv"
 	"github.com/go-ini/ini"
+	"golang.org/x/crypto/pbkdf2"
 )
+
+// /////////////////////////////
+// Taken from gogs /internal/userutil/userutil.go
+func ValidatePassword(encoded, salt, password string) bool {
+	got := EncodePassword(password, salt)
+	return subtle.ConstantTimeCompare([]byte(encoded), []byte(got)) == 1
+}
+
+func EncodePassword(password, salt string) string {
+	newPasswd := pbkdf2.Key([]byte(password), []byte(salt), 10000, 50, sha256.New)
+	return fmt.Sprintf("%x", newPasswd)
+}
+// /////////////////////////////
 
 type DatabaseType int
 
