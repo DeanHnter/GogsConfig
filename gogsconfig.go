@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 	"crypto/sha256"
 	"crypto/subtle"
+	"gorm.io/gorm"
 )
 
 // /////////////////////////////
@@ -128,6 +129,42 @@ type Payload struct {
     SMTPUser              string
     SSHPort               string
     SSLMode               string
+}
+
+// for reading a gogs user from db
+type GogsUser struct {
+	ID                    uint       `gorm:"primary_key:auto_increment"`
+	LowerName             string     `gorm:"not null"`
+	Name                  string     `gorm:"not null"`
+	FullName              string
+	Email                 string     `gorm:"not null"`
+	Passwd                string     `gorm:"not null"`
+	LoginSource           int        `gorm:"default:0"`
+	LoginName             string
+	Type                  int
+	Location              string
+	Website               string
+	Rands                 string
+	Salt                  string
+	CreatedUnix           int
+	UpdatedUnix           int
+	LastRepoVisibility    int
+	MaxRepoCreation       int        `gorm:"default:-1"`
+	IsActive              int
+	IsAdmin               int
+	AllowGitHook          int
+	AllowImportLocal      int
+	ProhibitLogin         int
+	Avatar                string     `gorm:"not null"`
+	AvatarEmail           string     `gorm:"not null"`
+	UseCustomAvatar       int
+	NumFollowers          int
+	NumFollowing          int        `gorm:"default:0"`
+	NumStars              int
+	NumRepos              int
+	Description           string
+	NumTeams              int
+	NumMembers            int
 }
 
 type Database struct {
