@@ -130,6 +130,50 @@ type Payload struct {
     SSLMode               string
 }
 
+// for reading a gogs repository from db
+type GogsRepository struct {
+  gorm.Model
+  ID                    uint   `gorm:"primarykey"`
+  OwnerID               int 
+  LowerName             string 
+  Name                  string 
+  Description           string 
+  Website               string 
+  DefaultBranch         string 
+  Size                  int 
+  UseCustomAvatar       int 
+  NumWatches            int 
+  NumStars              int 
+  NumForks              int 
+  NumIssues             int 
+  NumClosedIssues       int 
+  NumPulls              int 
+  NumClosedPulls        int 
+  NumMilestones         int 
+  NumClosedMilestones   int 
+  IsPrivate             int 
+  IsUnlisted            int `gorm:"default:0"`
+  IsBare                int 
+  IsMirror              int 
+  EnableWiki            int `gorm:"default:1"`
+  AllowPublicWiki       int 
+  EnableExternalWiki    int 
+  ExternalWikiURL       string 
+  EnableIssues          int `gorm:"default:1"`
+  AllowPublicIssues     int 
+  EnableExternalTracker int 
+  ExternalTrackerURL    string 
+  ExternalTrackerFormat string 
+  ExternalTrackerStyle  string 
+  EnablePulls           int `gorm:"default:1"`
+  PullsIgnoreWhitespace int `gorm:"default:0"`
+  PullsAllowRebase      int `gorm:"default:0"`
+  IsFork                int `gorm:"default:0"`
+  ForkID                int 
+  CreatedUnix           int 
+  UpdatedUnix           int 
+}
+
 // for reading a gogs user from db
 type GogsUser struct {
 	ID                    uint       `gorm:"primary_key:auto_increment"`
