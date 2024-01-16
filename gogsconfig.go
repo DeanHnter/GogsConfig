@@ -133,7 +133,6 @@ type Payload struct {
 
 // for reading a gogs repository from db
 type GogsRepository struct {
-  gorm.Model
   ID                    uint   `gorm:"primarykey"`
   OwnerID               int 
   LowerName             string 
